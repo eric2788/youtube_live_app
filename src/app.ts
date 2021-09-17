@@ -110,7 +110,7 @@ async function initRedis(): Promise<StandAloneRedisClient> {
     try {
         console.log(`正在連接到 Redis Server...`)
         const client = createClient({ socket: RedisConfig })
-        client.on("error", err => console.warn(`連接失敗: ${err?.message}`, err))
+        client.on("error", err => console.warn(`連接失敗: ${err?.message}`))
         await client.connect()
         await client.select(RedisConfig.db)
         console.log(`Redis server 已成功連接。`)
