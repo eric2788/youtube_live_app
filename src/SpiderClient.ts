@@ -1,7 +1,7 @@
 import { setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/dynamic'
 import { clearIntervalAsync } from 'set-interval-async'
 import { checker } from '../config/config.json'
-import { getLiveStreamVideo, isLive } from './YoutubeApi'
+import { getChannelName, getLiveStreamVideo, isLive } from './YoutubeApi'
 import { BraodCastInfo, LiveBroadcast, LiveRoomStatus, LIVE_ROOM_STATUS_CHANNEL, StandAloneRedisClient } from './types'
 
 const INTERVAL = checker.interval // seconds
@@ -27,18 +27,24 @@ export class SpiderClient {
             if (this._broadcasted) return // save quota
             const video = await getLiveStreamVideo(this._channel)
             let info: BraodCastInfo | undefined = undefined
+            let name: string
             if (video !== undefined){
                 info =  {
                     title: video.title,
                     description: video.description,
                     publishTime: video.datePublished,
-                    url: video.url,
-                    channelName: video.channel.name,
+                    url: video.shortUrl ?? video.url,
                     cover: video.thumbnails.high?.url ?? video.thumbnails.medium?.url ?? video.thumbnails.default?.url
                 }
+                
+                name = video.channel.name
+            }else{
+                name = await getChannelName(this.channel)
             }
+
             await this.publish({
                 channelId: this.channel, 
+                channelName: name,
                 status: 'live',
                 info: info
             })
@@ -47,6 +53,7 @@ export class SpiderClient {
             console.debug(`頻道 ${this.channel} 並沒有在直播`)
             await this.publish({
                 channelId: this.channel,
+                channelName: await getChannelName(this.channel),
                 status: 'idle'
             })
             if (this._broadcasted){

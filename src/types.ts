@@ -13,13 +13,13 @@ export interface LiveRoomStatus {
 
 export interface LiveBroadcast {
     channelId: string,
+    channelName: string,
     status: 'live' | 'idle'
     info?: BraodCastInfo
 }
 
 export interface BraodCastInfo {
     cover?: string,
-    channelName: string,
     title: string,
     url: string,
     publishTime: Date,

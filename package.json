@@ -4,8 +4,8 @@
   "description": "youtube live broadcast via redis pubsub",
   "main": "dist/app.js",
   "scripts": {
-    "start-js": "node ./dist/src/app.js",
-    "start": "ts-node src/app.ts",
+    "start": "node ./dist/src/app.js",
+    "test": "ts-node src/app.ts",
     "build": "tsc",
     "compile-start": "npm run build && npm run start-js"
   },
@@ -21,7 +21,6 @@
     "axios": "^0.21.4",
     "popyt": "^5.0.0",
     "redis": "^4.0.0-rc.1",
-    "set-interval-async": "^2.0.3",
-    "ts-node": "^10.2.1"
+    "set-interval-async": "^2.0.3"
   }
 }

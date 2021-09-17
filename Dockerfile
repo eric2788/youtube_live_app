@@ -1,13 +1,17 @@
 FROM node:latest
 
-WORKDIR /app
-
 COPY *.json ./
 
 COPY src ./src
 
+COPY config ./config
+
 RUN npm install
 
-VOLUME [ "/app/config" ]
+RUN npm run build
+
+WORKDIR /dist
+
+VOLUME [ "/dist/config" ]
 
 CMD [ "npm", "run", "start" ]
