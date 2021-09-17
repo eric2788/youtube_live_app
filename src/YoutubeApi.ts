@@ -6,7 +6,7 @@ const API_KEY = data.api.key
 
 const NOT_LIVING_KEYWORD = data.checker.not_live_keyword
 
-const youtubeApi = new YouTube(API_KEY, undefined, undefined, 'zh-TW', 'HK')
+const youtubeApi = new YouTube(API_KEY, undefined, { cacheSearches: false }, 'zh-TW', 'HK')
 
 
 // only 100 times per day

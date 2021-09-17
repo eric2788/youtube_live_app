@@ -4,14 +4,16 @@ import { RedisLuaScripts } from "redis/dist/lib/lua-script";
 
 export interface LiveRoomStatus {
 
-    channelId: string,
-    status: 'started' | 'stopped' | 'error'
+    platform: 'youtube' | 'twitter' | 'twitch' | 'bilibili'
+    id: string,
+    status: 'started' | 'stopped' | 'error' | 'existed'
 
 }
 
 
 export interface LiveBroadcast {
     channelId: string,
+    status: 'live' | 'idle'
     info?: BraodCastInfo
 }
 
@@ -27,4 +29,4 @@ export interface BraodCastInfo {
 
 export type StandAloneRedisClient = RedisClientType<RedisModules, RedisLuaScripts>
 
-export const LIVE_ROOM_STATUS_CHANNEL = "yt-live-status"
+export const LIVE_ROOM_STATUS_CHANNEL = "live-room-status"

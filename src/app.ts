@@ -19,6 +19,13 @@ async function main() {
 
     const client = await initRedis()
 
+    const status: LiveRoomStatus = {
+        platform: 'youtube',
+        id: 'server',
+        status: 'started'
+    } 
+    await client.publish(LIVE_ROOM_STATUS_CHANNEL, JSON.stringify(status))
+
     console.log(`Youtube Live Redis Server v${VERSION} 已成功啟動。`)
 
     while (true) {
@@ -43,16 +50,17 @@ async function main() {
 
             const listening = new Set([...spiderMap.keys()])
 
-            for (const toListen of diff(subscribing, listening)) {
+            for (const toListen of minus(subscribing, listening)) {
                 if (started.has(toListen)) continue
                 started.add(toListen)
                 await startSpider(toListen, client)
+                console.log(`已成功啟動監聽頻道 ${toListen} 。`)
             }
 
-            for (const toStop of diff(listening, subscribing)) {
+            for (const toStop of minus(listening, subscribing)) {
                 removeSpider(toStop)
                     .then(() => {
-                        console.log(`Spider for ${toStop} has been stopped.`)
+                        console.log(`已中止 ${toStop} 頻道的監聽。`)
                         started.delete(toStop)
                     })
                     .catch(err => console.error(`Error while stopping spider from channel ${toStop}`, err))
@@ -77,7 +85,8 @@ async function startSpider(channel: string, client: StandAloneRedisClient) {
         started.delete(channel)
         exceptions.add(channel)
         const status: LiveRoomStatus = {
-            channelId: channel,
+            platform: 'youtube',
+            id: channel,
             status: 'error'
         }
         await client.publish(LIVE_ROOM_STATUS_CHANNEL, JSON.stringify(status))
@@ -113,19 +122,16 @@ async function initRedis(): Promise<StandAloneRedisClient> {
     }
 }
 
-function* diff(from: Set<string>, to: Set<string>): Generator<string> {
+function* minus(from: Set<string>, to: Set<string>): Generator<string> {
     const fromSet = new Set(from);
     const toSet = new Set(to);
 
-    for (const v of toSet.values()) {
-        if (!fromSet.delete(v)) {
+    for (const v of fromSet.values()) {
+        if (!toSet.delete(v)) {
             yield v;
         }
     }
 
-    for (const v of fromSet.values()) {
-        yield v;
-    }
 }
 
 

@@ -13,8 +13,7 @@ export class SpiderClient {
 
     private _timer: SetIntervalAsyncTimer | null = null
 
-
-    private broadcasted: boolean = false
+    private _broadcasted: boolean = false
 
     constructor(channel: string, client: StandAloneRedisClient) {
         this._channel = channel
@@ -22,11 +21,10 @@ export class SpiderClient {
     }
 
     public async run(): Promise<void> {
-        console.debug(`Checking channel ${this.channel} is live streaming...`)
+        console.debug(`正在檢查頻道 ${this.channel}...`)
         if (await isLive(this._channel)) {
-            console.log(`Channel ${this.channel} is live streaming`)
-            if (this.broadcasted) return // already broadcasted
-            console.log(`no broadcast found, pushing notifications...`)
+            console.log(`頻道 ${this.channel} 正在直播`)
+            if (this._broadcasted) return // save quota
             const video = await getLiveStreamVideo(this._channel)
             let info: BraodCastInfo | undefined = undefined
             if (video !== undefined){
@@ -39,12 +37,20 @@ export class SpiderClient {
                     cover: video.thumbnails.high?.url ?? video.thumbnails.medium?.url ?? video.thumbnails.default?.url
                 }
             }
-            await this.publish({channelId: this.channel, info: info})
-            this.broadcasted = true
+            await this.publish({
+                channelId: this.channel, 
+                status: 'live',
+                info: info
+            })
+            this._broadcasted = true
         } else {
-            console.debug(`Channel ${this.channel} is not live streaming.`)
-            if (this.broadcasted) {
-                this.broadcasted = false
+            console.debug(`頻道 ${this.channel} 並沒有在直播`)
+            await this.publish({
+                channelId: this.channel,
+                status: 'idle'
+            })
+            if (this._broadcasted){
+                this._broadcasted = false
             }
         }
     }
@@ -55,12 +61,13 @@ export class SpiderClient {
             try {
                 await this.run()
             } catch (err: any | unknown) {
-                console.warn(`Error while running spider client from channel ${this.channel}: ${err?.message}`)
+                console.warn(`檢查頻道 ${this.channel} 時出現錯誤: ${err?.message}`)
                 console.warn(err)
             }
         }, INTERVAL * 1000)
         const status: LiveRoomStatus = {
-            channelId: this.channel,
+            platform: 'youtube',
+            id: this.channel,
             status: 'started'
         }
         await this._client.publish(LIVE_ROOM_STATUS_CHANNEL, JSON.stringify(status))
@@ -68,25 +75,25 @@ export class SpiderClient {
 
     public async stop(): Promise<boolean> {
         if (this._timer == null) {
-            console.warn(`live checker for ${this._channel} already stopped.`)
+            console.warn(`頻道 ${this._channel} 的監聽已經關閉`)
             return false
         }
         await clearIntervalAsync(this._timer)
         const status: LiveRoomStatus = {
-            channelId: this.channel,
+            platform: 'youtube',
+            id: this.channel,
             status: 'stopped'
         }
         await this._client.publish(LIVE_ROOM_STATUS_CHANNEL, JSON.stringify(status))
         return true
     }
 
-
     get channel(): string {
         return this._channel
     }
 
-
     private async publish(value: LiveBroadcast) {
+        console.log(`正在發送廣播通知: ${JSON.stringify(value, undefined, 4)}`)
         await this._client.publish(`ylive:${this.channel}`, JSON.stringify(value))
     }
 
