@@ -1,12 +1,12 @@
 import axios from 'axios'
-import { Channel, Video, YouTube } from 'popyt'
+import { Video, YouTube } from 'popyt'
 import data from '../config/config.json'
 
 const API_KEY = data.api.key
 
 const NOT_LIVING_KEYWORD = data.checker.not_live_keyword
 
-const youtubeApi = new YouTube(API_KEY, undefined, { cacheSearches: false }, 'zh-TW', 'HK')
+const youtubeApi = new YouTube(API_KEY, undefined, { cacheSearches: false }, data.api.language, data.api.region)
 
 // only 100 times per day
 export async function getLiveStreamVideo(channel: string): Promise<Video | undefined> {
