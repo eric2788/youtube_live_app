@@ -6,7 +6,7 @@ import { createClient } from 'redis'
 import { LiveRoomStatus, LIVE_ROOM_STATUS_CHANNEL, StandAloneRedisClient } from './types'
 
 
-const VERSION = "0.3"
+const VERSION = "0.4"
 
 const spiderMap = new Map<string, SpiderClient>()
 
