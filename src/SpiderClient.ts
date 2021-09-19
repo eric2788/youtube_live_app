@@ -1,7 +1,7 @@
 import { setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/dynamic'
 import { clearIntervalAsync } from 'set-interval-async'
 import { checker } from '../config/config.json'
-import { getChannelName, getLiveStreamVideo, getLiveStatus } from './YoutubeApi'
+import { getChannelName, getLiveStreamDetails, getLiveStatus } from './yt_utils'
 import { BraodCastInfo, LiveBroadcast, LiveRoomStatus, LiveStatus, LIVE_ROOM_STATUS_CHANNEL, StandAloneRedisClient } from './types'
 
 const INTERVAL = checker.interval // seconds
@@ -26,28 +26,12 @@ export class SpiderClient {
          if (status != 'idle') {
             console.log(`頻道 ${this.channel} ${status == 'live' ? '正在直播' : '有預定直播'}`)
             if (this._lastStatus == status) return // save quota
-            const video = await getLiveStreamVideo(this._channel, status == 'upcoming')
-            let info: BraodCastInfo | undefined = undefined
-            let name: string
-            if (video !== undefined){
-                info =  {
-                    title: video.title,
-                    description: video.description,
-                    publishTime: video.datePublished,
-                    url: video.shortUrl ?? video.url,
-                    cover: video.thumbnails.high?.url ?? video.thumbnails.medium?.url ?? video.thumbnails.default?.url
-                }
-                
-                name = video.channel.name
-            }else{
-                name = await getChannelName(this.channel)
-            }
-
+            const info = await getLiveStreamDetails(this._channel, status == 'upcoming') // 放在 getChannelName 之前以讀取之前的 cache
             await this.publish({
                 channelId: this.channel, 
-                channelName: name,
+                channelName: await getChannelName(this.channel),
                 status: status,
-                info: info
+                info
             })
             this._lastStatus = status
         } else {
