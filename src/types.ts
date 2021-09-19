@@ -100,7 +100,7 @@ export interface LiveStreamingDetails {
     actualEndTime?: Date,
     scheduledStartTime: Date,
     scheduledEndTime?: Date,
-    concurrentViewers: number,
+    concurrentViewers?: number,
     activeLiveChatId: string
 }
 
