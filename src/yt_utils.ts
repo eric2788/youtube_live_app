@@ -41,7 +41,7 @@ export async function getLiveStreamDetails(channel: string, upcoming: boolean = 
             title: video.snippet.title,
             description: video.snippet.description,
             publishTime: time,
-            url: `https://youtu.be/${video.id}`
+            id: video.id
         }
     }catch(err: any | unknown){
         // maybe quota exceeded

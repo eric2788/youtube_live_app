@@ -22,7 +22,7 @@ export interface LiveBroadcast {
 export interface BraodCastInfo {
     cover?: string,
     title: string,
-    url: string,
+    id: string,
     publishTime: Date,
     description: string
 }
@@ -37,7 +37,7 @@ export interface ChannelResponse {
     kind: string,
     etag: string,
     items: ChannelItem[]
-    
+
 }
 
 export interface ChannelItem {
