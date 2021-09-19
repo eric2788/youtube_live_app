@@ -10,6 +10,8 @@ RUN npm install
 
 RUN npm run build
 
+RUN rm -rf ./src
+
 WORKDIR /dist
 
 VOLUME [ "/dist/config" ]
