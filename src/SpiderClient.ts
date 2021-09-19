@@ -1,7 +1,7 @@
 import { setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/dynamic'
 import { clearIntervalAsync } from 'set-interval-async'
 import { checker } from '../config/config.json'
-import { getChannelName, getLiveStreamVideo, isLive } from './YoutubeApi'
+import { getChannelName, getLiveStreamVideo, getLiveStatus } from './YoutubeApi'
 import { BraodCastInfo, LiveBroadcast, LiveRoomStatus, LIVE_ROOM_STATUS_CHANNEL, StandAloneRedisClient } from './types'
 
 const INTERVAL = checker.interval // seconds
@@ -14,6 +14,7 @@ export class SpiderClient {
     private _timer: SetIntervalAsyncTimer | null = null
 
     private _broadcasted: boolean = false
+    private _upcoming: boolean = false
 
     constructor(channel: string, client: StandAloneRedisClient) {
         this._channel = channel
@@ -22,10 +23,12 @@ export class SpiderClient {
 
     public async run(): Promise<void> {
         console.debug(`正在檢查頻道 ${this.channel}...`)
-        if (await isLive(this._channel)) {
-            console.log(`頻道 ${this.channel} 正在直播`)
-            if (this._broadcasted) return // save quota
-            const video = await getLiveStreamVideo(this._channel)
+        const status = await getLiveStatus(this._channel)
+         if (status != 'idle') {
+            console.log(`頻道 ${this.channel} ${status == 'live' ? '正在直播' : '有預定直播'}`)
+            if (status == 'live' && this._broadcasted) return // save quota
+            if (status == 'upcoming' && this._upcoming) return // save quota
+            const video = await getLiveStreamVideo(this._channel, status == 'upcoming')
             let info: BraodCastInfo | undefined = undefined
             let name: string
             if (video !== undefined){
@@ -45,16 +48,21 @@ export class SpiderClient {
             await this.publish({
                 channelId: this.channel, 
                 channelName: name,
-                status: 'live',
+                status: status,
                 info: info
             })
-            this._broadcasted = true
+            if (status == 'live'){
+                this._broadcasted = true
+            }
+            if (status == 'upcoming') {
+                this,this._upcoming = true
+            }
         } else {
             console.debug(`頻道 ${this.channel} 並沒有在直播`)
             await this.publish({
                 channelId: this.channel,
                 channelName: await getChannelName(this.channel),
-                status: 'idle'
+                status: status
             })
             if (this._broadcasted){
                 this._broadcasted = false

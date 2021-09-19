@@ -10,11 +10,12 @@ export interface LiveRoomStatus {
 
 }
 
+export type LiveStatus = 'live' | 'idle' | 'upcoming'
 
 export interface LiveBroadcast {
     channelId: string,
     channelName: string,
-    status: 'live' | 'idle'
+    status: LiveStatus
     info?: BraodCastInfo
 }
 

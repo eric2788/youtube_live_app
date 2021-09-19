@@ -1,24 +1,27 @@
 import axios from 'axios'
 import { Video, YouTube } from 'popyt'
 import data from '../config/config.json'
+import { LiveStatus } from './types'
 
 const API_KEY = data.api.key
 
 const NOT_LIVING_KEYWORD = data.checker.not_live_keyword
 
+const UPCOMING_KEYWORD = data.checker.upcoming_keyword
+
 const youtubeApi = new YouTube(API_KEY, undefined, { cacheSearches: false }, data.api.language, data.api.region)
 
 // only 100 times per day
-export async function getLiveStreamVideo(channel: string): Promise<Video | undefined> {
+export async function getLiveStreamVideo(channel: string, upcoming: boolean = false): Promise<Video | undefined> {
     try {
-        const {results: videos} = await youtubeApi.searchVideos('', 1, undefined, 'video', channel, undefined, 'live')
+        const {results: videos} = await youtubeApi.searchVideos('', 1, undefined, 'video', channel, undefined, upcoming ? 'upcoming' : 'live')
         if (!videos.length){
-            console.warn(`Cannot find any living video from ${channel}`)
+            console.warn(`Cannot find any ${upcoming ? 'upcoming' : 'live'} video from ${channel}`)
         }
         return videos[0];
     }catch(err: any | unknown){
         // maybe quota exceeded
-        console.log(`Error while searching live video from ${channel}: ${err?.message ?? 'no error message'}`)
+        console.log(`Error while searching ${upcoming ? 'upcoming' : 'live'} video from ${channel}: ${err?.message ?? 'no error message'}`)
         console.warn(err)
         return undefined;
     }
@@ -33,8 +36,12 @@ export async function getChannelName(channel: string): Promise<string> {
     return youtubeChannel.name
 }
 
-export async function isLive(channel: String): Promise<Boolean> {
+export async function getLiveStatus(channel: String): Promise<LiveStatus> {
     const res = await axios.get(`https://www.youtube.com/channel/${channel}/live`)
     const str = res.data as String
-    return str.indexOf(NOT_LIVING_KEYWORD) == -1
+    if (str.indexOf(NOT_LIVING_KEYWORD) == -1){
+        return str.indexOf(UPCOMING_KEYWORD) == -1 ? 'live' : 'upcoming'
+    }else{
+        return 'idle'
+    }
 }
