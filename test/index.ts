@@ -24,12 +24,13 @@ async function getLiveStatus(channel: String): Promise<'live' | 'upcoming' | 'id
     }
 }
 
+const channel = {
+    oto: 'UCvEX2UICvFAa_T6pqizC20g',
+    nano: 'UC0lIq8G4LgDPlXsDmYSUExw'
+}
 
-async function test() {
-    const channel = {
-        oto: 'UCvEX2UICvFAa_T6pqizC20g',
-        nano: 'UC0lIq8G4LgDPlXsDmYSUExw'
-    }
+
+async function test() {  
     const selected = channel.oto
     const status = await utils.getLiveStatus(selected)
     console.log(`狀態: ${status}`)
@@ -40,6 +41,11 @@ async function test() {
     console.log(`詳細: ${details == undefined ? "無": JSON.stringify(details, undefined, 4)}`)
 }
 
+async function testChannelName(){
+    const name = await utils.getChannelName(channel.oto)
+    console.log(name)
+}
 
 
-test().finally(() => exit())
+
+testChannelName().catch(console.error).finally(() => exit())

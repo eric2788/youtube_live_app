@@ -33,6 +33,14 @@ export type StandAloneRedisClient = RedisClientType<RedisModules, RedisLuaScript
 export const LIVE_ROOM_STATUS_CHANNEL = "live-room-status"
 
 export interface ChannelResponse {
+
+    kind: string,
+    etag: string,
+    items: ChannelItem[]
+    
+}
+
+export interface ChannelItem {
     kind: string,
     etag: string,
     id: string,

@@ -55,7 +55,9 @@ const channelNameCache = new Map<string, string>()
 
 export async function getChannelName(channel: string): Promise<string> {
     if (channelNameCache.has(channel)) return channelNameCache.get(channel)!!
-    const youtubeChannel =  await getChannel(channel)
+    const {items} =  await getChannel(channel)
+    if (items.length == 0) throw new Error(`Unknown channel ID: ${channel}`)
+    const youtubeChannel = items[0]
     channelNameCache.set(channel, youtubeChannel.snippet.title)
     return youtubeChannel.snippet.title
 }
