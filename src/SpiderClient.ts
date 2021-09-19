@@ -85,7 +85,9 @@ export class SpiderClient {
     }
 
     private async publish(value: LiveBroadcast) {
-        console.log(`正在發送廣播通知: ${JSON.stringify(value, undefined, 4)}`)
+        if (value.status != 'idle'){
+            console.log(`正在發送廣播通知: ${JSON.stringify(value, undefined, 4)}`)
+        }
         await this._client.publish(`ylive:${this.channel}`, JSON.stringify(value))
     }
 
