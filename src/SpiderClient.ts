@@ -1,8 +1,8 @@
-import { setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/dynamic'
+import { setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed'
 import { clearIntervalAsync } from 'set-interval-async'
 import { checker } from '../config/config.json'
 import { getChannelName, getLiveStreamDetails, getLiveStatus } from './yt_utils'
-import { BraodCastInfo, LiveBroadcast, LiveRoomStatus, LiveStatus, LIVE_ROOM_STATUS_CHANNEL, StandAloneRedisClient } from './types'
+import { LiveBroadcast, LiveRoomStatus, LiveStatus, LIVE_ROOM_STATUS_CHANNEL, StandAloneRedisClient } from './types'
 
 const INTERVAL = checker.interval // seconds
 
