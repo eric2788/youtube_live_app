@@ -26,12 +26,13 @@ async function getLiveStatus(channel: String): Promise<'live' | 'upcoming' | 'id
 
 const channel = {
     oto: 'UCvEX2UICvFAa_T6pqizC20g',
-    nano: 'UC0lIq8G4LgDPlXsDmYSUExw'
+    nano: 'UC0lIq8G4LgDPlXsDmYSUExw',
+    mana: 'UCIaC5td9nGG6JeKllWLwFLA'
 }
 
 
 async function test() {  
-    const selected = channel.oto
+    const selected = channel.mana
     const status = await utils.getLiveStatus(selected)
     console.log(`狀態: ${status}`)
     if (status == 'idle') return
@@ -48,4 +49,4 @@ async function testChannelName(){
 
 
 
-testChannelName().catch(console.error).finally(() => exit())
+test().catch(console.error).finally(() => exit())
