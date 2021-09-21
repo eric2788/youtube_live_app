@@ -3,9 +3,11 @@ import data from '../config/config.json'
 import { BraodCastInfo, LiveStatus, Thumbails } from './types'
 import { getChannel, getVideo, searchVideo } from './youtube_api'
 
-const NOT_LIVING_KEYWORD = data.checker.not_live_keyword
-
-const UPCOMING_KEYWORD = data.checker.upcoming_keyword
+const { 
+    not_live_keyword: NOT_LIVING_KEYWORD, 
+    upcoming_keyword: UPCOMING_KEYWORD, 
+    live_keyword: LIVE_KEYWORD
+} = data.checker
 
 
 function getCover(thumbnails: Thumbails): string | undefined {
@@ -62,13 +64,16 @@ export async function getChannelName(channel: string): Promise<string> {
     return youtubeChannel.snippet.title
 }
 
-export async function getLiveStatus(channel: String): Promise<LiveStatus> {
+export async function getLiveStatus(channel: String): Promise<LiveStatus | undefined> {
     const res = await axios.get(`https://www.youtube.com/channel/${channel}/live`)
     const str = res.data as String
-    if (str.indexOf(NOT_LIVING_KEYWORD) == -1){
+    if (str.indexOf(LIVE_KEYWORD) != -1){
         return str.indexOf(UPCOMING_KEYWORD) == -1 ? 'live' : 'upcoming'
-    }else{
+    }else if (str.indexOf(NOT_LIVING_KEYWORD) != -1){
         return 'idle'
+    }else{
+        console.warn(`無法找到頻道 ${channel} 的狀態，可能被驗證中`)
+        return undefined
     }
 }
 

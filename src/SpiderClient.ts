@@ -14,6 +14,7 @@ export class SpiderClient {
     private _timer: SetIntervalAsyncTimer | null = null
 
     private _lastStatus: LiveStatus = 'idle'
+    private _unknownInfoTimes: number = 0
 
     constructor(channel: string, client: StandAloneRedisClient) {
         this._channel = channel
@@ -23,12 +24,18 @@ export class SpiderClient {
     public async run(): Promise<void> {
         console.debug(`正在檢查頻道 ${this.channel}...`)
         const status = await getLiveStatus(this._channel)
-         if (status != 'idle') {
+        if (status === undefined) return
+        if (status != 'idle') {
             console.log(`頻道 ${this.channel} ${status == 'live' ? '正在直播' : '有預定直播'}`)
             if (this._lastStatus == status) return // save quota
             const info = await getLiveStreamDetails(this._channel, status == 'upcoming') // 放在 getChannelName 之前以讀取之前的 cache
+            if (info === undefined && this._unknownInfoTimes < 3) {
+                this._unknownInfoTimes++
+                console.log(`有預定直播或直播狀態但找不到直播資訊，將等待下次資訊獲取 (${this._unknownInfoTimes}/3)`)
+                return
+            }
             await this.publish({
-                channelId: this.channel, 
+                channelId: this.channel,
                 channelName: await getChannelName(this.channel),
                 status: status,
                 info
@@ -41,10 +48,11 @@ export class SpiderClient {
                 channelName: await getChannelName(this.channel),
                 status: status
             })
-            if (this._lastStatus != 'idle'){
+            if (this._lastStatus != 'idle') {
                 this._lastStatus = 'idle'
             }
         }
+        this._unknownInfoTimes = 0
     }
 
 
@@ -85,7 +93,7 @@ export class SpiderClient {
     }
 
     private async publish(value: LiveBroadcast) {
-        if (value.status != 'idle'){
+        if (value.status != 'idle') {
             console.log(`正在發送廣播通知: ${JSON.stringify(value, undefined, 4)}`)
         }
         await this._client.publish(`ylive:${this.channel}`, JSON.stringify(value))
