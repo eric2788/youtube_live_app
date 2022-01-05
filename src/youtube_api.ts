@@ -24,7 +24,7 @@ export async function getVideo(id: string): Promise<VideoResponse> {
     const res = await youtubeAPI.get('videos', {
         params: {
            part: 'snippet,liveStreamingDetails',
-           id: id
+           id
         }
     })
     return res.data as VideoResponse
